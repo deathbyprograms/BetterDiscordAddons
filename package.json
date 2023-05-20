@@ -1,0 +1,29 @@
+{
+  "name": "betterdiscordaddons",
+  "version": "0.0.1",
+  "description": "Better Discord Addons",
+  "scripts": {
+    "build": "zpl build",
+    "init": "zpl init",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deathbyprograms/BetterDiscordAddons.git"
+  },
+  "author": "DeathByPrograms",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deathbyprograms/BetterDiscordAddons/issues"
+  },
+  "homepage": "https://github.com/deathbyprograms/BetterDiscordAddons#readme",
+  "zplConfig": {
+    "base": "src/plugins",
+    "out": "dist",
+    "copyToDB": true,
+    "installScript": false
+  },
+  "devDependencies": {
+    "zerespluginlibrary": "^2.0.6"
+  }
+}

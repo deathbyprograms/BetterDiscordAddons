@@ -1,0 +1,17 @@
+{
+    "main": "index.js",
+    "id": "",
+    "name": "NotificationWhitelist",
+    "author": "DeathByPrograms",
+    "authorId": "",
+    "authorLink": "",
+    "version": "0.0.1",
+    "description": "Allows servers and channels to be added to a notification whitelist",
+    "website": "",
+    "source": "",
+    "patreon": "",
+    "donate": "",
+    "invite": "",
+    "changelog": [],
+    "defaultConfig": []
+}
