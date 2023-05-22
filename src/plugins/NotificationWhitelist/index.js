@@ -20,27 +20,35 @@ module.exports = (Plugin, Library) => {
 
         onStart() {
             Logger.info("Plugin enabled!");
-            this.serverContextUnpatch = BdApi.ContextMenu.patch('guild-context', (res, props) => {
+            this.contextPatchRemovers = [];
+            this.contextPatchRemovers.push(BdApi.ContextMenu.patch('guild-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
                 checked: this.settings.serverWhitelist.includes(props.guild.id), action: (_) => {
                     this.toggleServerWhitelisted(props.guild.id);
                 }}));
-            });
-            this.channelContextUnpatch = BdApi.ContextMenu.patch('channel-context', (res, props) => {
+            }));
+            this.contextPatchRemovers.push(BdApi.ContextMenu.patch('channel-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
                 checked: this.settings.channelWhitelist.includes(props.channel.id), action: (_) => {
                     this.toggleChannelWhitelisted(props.channel.id);
                 }}));
-            });
-            this.userContextUnpatch = BdApi.ContextMenu.patch('user-context', (res, props) => {
+            }));
+            this.contextPatchRemovers.push(BdApi.ContextMenu.patch('user-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
                 checked: this.settings.channelWhitelist.includes(props.channel.id), action: (_) => {
                     this.toggleChannelWhitelisted(props.channel.id);
                 }}));
-            });
+            }));
+            this.contextPatchRemovers.push(BdApi.ContextMenu.patch('gdm-context', (res, props) => {
+                res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
+                res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
+                checked: this.settings.serverWhitelist.includes(props.channel.id), action: (_) => {
+                    this.toggleServerWhitelisted(props.channel.id);
+                }}));
+            }));
             var notifModule = BdApi.Webpack.getModule((m) => m.showNotification && m.requestPermission);
             BdApi.Patcher.instead("NotificationWhitelist", notifModule, "showNotification", (_, args, orig) => {
                 if(!this.settings.enableWhitelisting)return orig(...args);
@@ -54,9 +62,8 @@ module.exports = (Plugin, Library) => {
         onStop() {
             Logger.info("Plugin disabled!");
             BdApi.Patcher.unpatchAll("NotificationWhitelist");
-            this.serverContextUnpatch();
-            this.channelContextUnpatch();
-            this.userContextUnpatch();
+            for(var patchRemover of this.contextPatchRemovers)patchRemover();
+            this.contextPatchRemovers = [];
         }
 
         toggleServerWhitelisted(id){
