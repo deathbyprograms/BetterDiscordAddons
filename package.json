@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "description": "Better Discord Addons",
   "scripts": {
-    "build": "zpl build",
+    "build": "node scripts/build.js",
+    "zplBuild": "zpl build",
+    "package": "node scripts/packageForDist.js",
     "init": "zpl init",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,7 +21,7 @@
   "homepage": "https://github.com/deathbyprograms/BetterDiscordAddons#readme",
   "zplConfig": {
     "base": "src/plugins",
-    "out": "dist",
+    "out": "build",
     "copyToDB": true,
     "installScript": false
   },

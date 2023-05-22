@@ -6,7 +6,7 @@
  */
 module.exports = (Plugin, Library) => {
 
-    const {DiscordModules, Logger, Settings} = Library;
+    const {Logger, Settings} = Library;
     
     return class extends Plugin {
 

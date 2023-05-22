@@ -3,18 +3,21 @@
  * @description Allows servers and channels to be added to a notification whitelist
  * @version 0.0.1
  * @author DeathByPrograms
+ * @authorId 234086939102281728
+ * @website https://github.com/deathbyprograms/BetterDiscordAddons/tree/main/dist/NotificationWhitelist
+ * @source https://github.com/deathbyprograms/BetterDiscordAddons/blob/main/dist/NotificationWhitelist/NotificationWhitelist.plugin.js
  */
 const config = {
     main: "index.js",
-    id: "",
+    id: "NotificationWhitelist",
     name: "NotificationWhitelist",
     author: "DeathByPrograms",
-    authorId: "",
+    authorId: "234086939102281728",
     authorLink: "",
     version: "0.0.1",
     description: "Allows servers and channels to be added to a notification whitelist",
-    website: "",
-    source: "",
+    website: "https://github.com/deathbyprograms/BetterDiscordAddons/tree/main/dist/NotificationWhitelist",
+    source: "https://github.com/deathbyprograms/BetterDiscordAddons/blob/main/dist/NotificationWhitelist/NotificationWhitelist.plugin.js",
     patreon: "",
     donate: "",
     invite: "",
@@ -51,7 +54,7 @@ if (!global.ZeresPluginLibrary) {
 module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
      const plugin = (Plugin, Library) => {
 
-    const {DiscordModules, Logger, Settings} = Library;
+    const {Logger, Settings} = Library;
     
     return class extends Plugin {
 
@@ -87,11 +90,6 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
                 }}));
             });
             var notifModule = BdApi.Webpack.getModule((m) => m.showNotification && m.requestPermission);
-
-            // BdApi.Patcher.before("NotificationWhitelist", notifModule, "showNotification", (_, args) => {
-            //     Logger.debug("Notification: ", args);
-            // });
-
             BdApi.Patcher.instead("NotificationWhitelist", notifModule, "showNotification", (_, args, orig) => {
                 if(!this.settings.enableWhitelisting)return orig(...args);
                 if(!args[3])return orig(...args);
@@ -99,20 +97,6 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
                 if(args[3].guild_id && this.settings.serverWhitelist.includes(args[3].guild_id))return orig(...args);
                 Logger.debug("Blocked notification: ", args[3]);
             });
-
-            // BdApi.Patcher.instead("NotificationWhitelist", DiscordModules.Dispatcher, "dispatch", (_, args, orig) => {
-            //     if(!this.settings.enableWhitelisting)return orig(...args);
-            //     if(args[0].type !== "RPC_NOTIFICATION_CREATE")return orig(...args);
-            //     if(this.settings.channelWhitelist.includes(args[0].message.channel_id))return orig(...args);
-            //     if(args[0].message.guild_id && this.settings.serverWhitelist.includes(args[0].message.guild_id))return orig(...args);
-            //     Logger.debug("Blocked notification: ", args[0]);
-            //     Logger.debug("Blocked notification: ", orig);
-            //     return Promise.resolve();
-            // });
-            // BdApi.Patcher.instead("NotificationWhitelist", BdApi.Webpack.getModule(m => m.showNotification), "showNotification", (_, args, orig) => {
-            //     Logger.debug("Notification: ", args);
-            //     return orig(...args);
-            // });
         }
 
         onStop() {
