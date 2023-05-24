@@ -62,6 +62,7 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             super();
             this.defaultSettings = {};
             this.defaultSettings.serverWhitelist = [];
+            this.defaultSettings.folderWhitelist = [];
             this.defaultSettings.channelWhitelist = [];
             this.defaultSettings.enableWhitelisting = true;
         }
@@ -71,30 +72,37 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             this.contextPatchRemovers = [];
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('guild-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
-                res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
-                checked: this.settings.serverWhitelist.includes(props.guild.id), action: (_) => {
-                    this.toggleServerWhitelisted(props.guild.id);
-                }}));
+                if(props.guild) {
+                    res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
+                    checked: this.settings.serverWhitelist.includes(props.guild.id), action: (_) => {
+                        this.toggleWhitelisted(props.guild.id, this.settings.serverWhitelist);
+                    }}));
+                } else if(props.folderId){
+                    res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
+                    checked: this.settings.folderWhitelist.includes(props.folderId), action: (_) => {
+                        this.toggleWhitelisted(props.folderId, this.settings.folderWhitelist);
+                    }}));
+                }
             }));
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('channel-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
                 checked: this.settings.channelWhitelist.includes(props.channel.id), action: (_) => {
-                    this.toggleChannelWhitelisted(props.channel.id);
+                    this.toggleWhitelisted(props.channel.id, this.settings.channelWhitelist);
                 }}));
             }));
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('user-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
                 checked: this.settings.channelWhitelist.includes(props.channel.id), action: (_) => {
-                    this.toggleChannelWhitelisted(props.channel.id);
+                    this.toggleWhitelisted(props.channel.id, this.settings.channelWhitelist);
                 }}));
             }));
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('gdm-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
-                checked: this.settings.serverWhitelist.includes(props.channel.id), action: (_) => {
-                    this.toggleServerWhitelisted(props.channel.id);
+                checked: this.settings.channelWhitelist.includes(props.channel.id), action: (_) => {
+                    this.toggleWhitelisted(props.channel.id, this.settings.channelWhitelist);
                 }}));
             }));
             var notifModule = BdApi.Webpack.getModule((m) => m.showNotification && m.requestPermission);
@@ -103,6 +111,7 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
                 if(!args[3])return orig(...args);
                 if(this.settings.channelWhitelist.includes(args[3].channel_id))return orig(...args);
                 if(args[3].guild_id && this.settings.serverWhitelist.includes(args[3].guild_id))return orig(...args);
+                if(args[3].guild_id && this.checkIfGuildInFolderWhitelist(args[3].guild_id))return orig(...args);
                 Logger.debug("Blocked notification: ", args[3]);
             });
         }
@@ -114,44 +123,23 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             this.contextPatchRemovers = [];
         }
 
-        toggleServerWhitelisted(id){
-            if(this.settings.serverWhitelist.includes(id))this.removeFromServerWhitelist(id);
-            else this.addToServerWhitelist(id);
+        toggleWhitelisted(id, arr){
+            if(arr.includes(id))this.removeFromWhitelist(id, arr);
+            else this.addToWhitelist(id, arr);
         }
 
-        addToServerWhitelist(id){
-            Logger.debug("Adding to server whitelist: ", id);
-            if(!this.settings.serverWhitelist.includes(id)){
-                this.settings.serverWhitelist.push(id);
+        addToWhitelist(id, arr){
+            Logger.debug("Adding to whitelist: ", id);
+            if(!arr.includes(id)){
+                arr.push(id);
                 this.saveSettings();
             }
         }
 
-        removeFromServerWhitelist(id){
-            Logger.debug("Removing from server whitelist: ", id);
-            if(this.settings.serverWhitelist.includes(id)){
-                this.settings.serverWhitelist.splice(this.settings.serverWhitelist.indexOf(id), 1);
-                this.saveSettings();
-            }
-        }
-
-        toggleChannelWhitelisted(id){
-            if(this.settings.channelWhitelist.includes(id))this.removeFromChannelWhitelist(id);
-            else this.addToChannelWhitelist(id);
-        }
-
-        addToChannelWhitelist(id){
-            Logger.debug("Adding to channel whitelist: ", id);
-            if(!this.settings.channelWhitelist.includes(id)){
-                this.settings.channelWhitelist.push(id);
-                this.saveSettings();
-            }
-        }
-
-        removeFromChannelWhitelist(id){
-            Logger.debug("Removing from channel whitelist: ", id);
-            if(this.settings.channelWhitelist.includes(id)){
-                this.settings.channelWhitelist.splice(this.settings.channelWhitelist.indexOf(id), 1);
+        removeFromWhitelist(id, arr){
+            Logger.debug("Removing from whitelist: ", id);
+            if(arr.includes(id)){
+                arr.splice(arr.indexOf(id), 1);
                 this.saveSettings();
             }
         }
@@ -159,6 +147,7 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
         clearWhitelist(){ 
             Logger.info("Clearing whitelist!");
             this.settings.serverWhitelist = [];
+            this.settings.folderWhitelist = [];
             this.settings.channelWhitelist = [];
             this.saveSettings();
         }
@@ -175,6 +164,14 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
                     this.settings.enableWhitelisting, (i) => {this.settings.enableWhitelisting = i;}),
                 new Settings.SettingField("Clear Whitelist", "", () => {}, button)
             )
+        }
+
+        checkIfGuildInFolderWhitelist(guildId){
+            var folderModule = BdApi.Webpack.getModule((m) => m.getGuildFolderById);
+            for(var folderId of this.settings.folderWhitelist){
+                if(folderModule.getGuildFolderById(folderId).guildIds.includes(guildId))return true;
+            }
+            return false;
         }
     };
 
