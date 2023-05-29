@@ -60,30 +60,42 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
 
         constructor() {
             super();
+
+            // Set the default settings for the plugin
             this.defaultSettings = {};
             this.defaultSettings.serverWhitelist = [];
             this.defaultSettings.folderWhitelist = [];
             this.defaultSettings.channelWhitelist = [];
             this.defaultSettings.enableWhitelisting = true;
+            this.defaultSettings.allowNonMessageNotifications = false;
         }
 
         onStart() {
             Logger.info("Plugin enabled!");
             this.contextPatchRemovers = [];
+
+            // Add the whitelist option to the server and folder context menu.
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('guild-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
-                if(props.guild) {
+                
+                if(props.guild) {   // Check if the context menu is for a server.
+
                     res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
                     checked: this.settings.serverWhitelist.includes(props.guild.id), action: (_) => {
                         this.toggleWhitelisted(props.guild.id, this.settings.serverWhitelist);
                     }}));
-                } else if(props.folderId){
+
+                } else if(props.folderId){  // Check if the context menu is for a folder.
+
                     res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
                     checked: this.settings.folderWhitelist.includes(props.folderId), action: (_) => {
                         this.toggleWhitelisted(props.folderId, this.settings.folderWhitelist);
                     }}));
+
                 }
             }));
+
+            // Add the whitelist option to the channel context menu.
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('channel-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
@@ -91,6 +103,8 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
                     this.toggleWhitelisted(props.channel.id, this.settings.channelWhitelist);
                 }}));
             }));
+
+            // Add the whitelist option to the DM context menu for single users.
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('user-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
@@ -98,6 +112,8 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
                     this.toggleWhitelisted(props.channel.id, this.settings.channelWhitelist);
                 }}));
             }));
+
+            // Add the whitelist option to the group DM context menu.
             this.contextPatchRemovers.push(BdApi.ContextMenu.patch('gdm-context', (res, props) => {
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "separator"}));
                 res.props.children.push(BdApi.ContextMenu.buildItem({type: "toggle", label: "Notifications Whitelisted", 
@@ -105,29 +121,48 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
                     this.toggleWhitelisted(props.channel.id, this.settings.channelWhitelist);
                 }}));
             }));
+
+
             var notifModule = BdApi.Webpack.getModule((m) => m.showNotification && m.requestPermission);
+
+            // Patch the showNotification function to intercept notifications if they are not whitelisted while whitelisting is enabled.
             BdApi.Patcher.instead("NotificationWhitelist", notifModule, "showNotification", (_, args, orig) => {
-                if(!this.settings.enableWhitelisting)return orig(...args);
-                if(!args[3])return orig(...args);
-                if(this.settings.channelWhitelist.includes(args[3].channel_id))return orig(...args);
-                if(args[3].guild_id && this.settings.serverWhitelist.includes(args[3].guild_id))return orig(...args);
-                if(args[3].guild_id && this.checkIfGuildInFolderWhitelist(args[3].guild_id))return orig(...args);
+                if(!this.settings.enableWhitelisting)return orig(...args);  // If whitelisting is disabled, allow the notification.
+                if(!args[3])return orig(...args);   // If the showNotification function is somehow called without the proper information, allow the notification.
+                if(this.settings.allowNonMessageNotifications && !args[3].channel_id && !args[3].guild_id)return orig(...args);   // If the notification is not for a channel or server (e.g. friend requests) and such notifications are allowed, allow the notification.
+                if(this.settings.channelWhitelist.includes(args[3].channel_id))return orig(...args);    // If the channel is whitelisted, allow the notification.
+                if(args[3].guild_id && this.settings.serverWhitelist.includes(args[3].guild_id))return orig(...args);   // If the notification is from a whitelisted server, allow the notificaiton.
+                if(args[3].guild_id && this.checkIfGuildInFolderWhitelist(args[3].guild_id))return orig(...args);   // If the notification is from a whitelisted folder, allow the notification.
                 Logger.debug("Blocked notification: ", args[3]);
             });
         }
 
         onStop() {
             Logger.info("Plugin disabled!");
+
+            // Unpatch all the patches we made.
             BdApi.Patcher.unpatchAll("NotificationWhitelist");
             for(var patchRemover of this.contextPatchRemovers)patchRemover();
             this.contextPatchRemovers = [];
         }
 
+        /**
+         * Toggles the whitelisted status of the given id
+         * 
+         * @param {string} id - The id of the channel/server/folder to toggle
+         * @param {Array<string>} arr - The whitelist array to toggle the id in
+         */
         toggleWhitelisted(id, arr){
             if(arr.includes(id))this.removeFromWhitelist(id, arr);
             else this.addToWhitelist(id, arr);
         }
 
+        /**
+         * Whitelists the given id
+         * 
+         * @param {string} id - The id of the channel/server/folder to whitelist
+         * @param {Array<string>} arr - The whitelist array to add the id to
+         */
         addToWhitelist(id, arr){
             Logger.debug("Adding to whitelist: ", id);
             if(!arr.includes(id)){
@@ -136,6 +171,12 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             }
         }
 
+        /**
+         * Removes the given id from the whitelist
+         * 
+         * @param {string} id - The id of the channel/server/folder to remove from the whitelist
+         * @param {Array<string>} arr - The whitelist array to remove the id from
+         */
         removeFromWhitelist(id, arr){
             Logger.debug("Removing from whitelist: ", id);
             if(arr.includes(id)){
@@ -144,6 +185,9 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             }
         }
         
+        /**
+         * Clears all whitelists
+         */
         clearWhitelist(){ 
             Logger.info("Clearing whitelist!");
             this.settings.serverWhitelist = [];
@@ -162,10 +206,18 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             return Settings.SettingPanel.build(this.saveSettings.bind(this),
                 new Settings.Switch("Enable Whitelisting", "Enables notification whitelisting. Note: turning this on without any whitelisted channels/servers will disable all notifications.", 
                     this.settings.enableWhitelisting, (i) => {this.settings.enableWhitelisting = i;}),
+                new Settings.Switch("Allow non-message notifications", "Allows notifications that are not for messages to be shown. (e.g. friend requests)",
+                    this.settings.allowNonMessageNotifications, (i) => {this.settings.allowNonMessageNotifications = i;}),
                 new Settings.SettingField("Clear Whitelist", "", () => {}, button)
             )
         }
 
+        /**
+         * Checks whether the given guild is in a whitelisted folder
+         * 
+         * @param {string} guildId - The guild id to check
+         * @returns {boolean} - Whether the guild is in a whitelisted folder
+         */
         checkIfGuildInFolderWhitelist(guildId){
             var folderModule = BdApi.Webpack.getModule((m) => m.getGuildFolderById);
             for(var folderId of this.settings.folderWhitelist){
