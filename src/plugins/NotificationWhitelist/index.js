@@ -20,6 +20,8 @@ module.exports = (Plugin, Library) => {
             this.defaultSettings.channelWhitelist = [];
             this.defaultSettings.enableWhitelisting = true;
             this.defaultSettings.allowNonMessageNotifications = false;
+            
+            this.cachedModules = {};
         }
 
         onStart() {
@@ -171,7 +173,9 @@ module.exports = (Plugin, Library) => {
          * @returns {boolean} - Whether the guild is in a whitelisted folder
          */
         checkIfGuildInFolderWhitelist(guildId){
-            var folderModule = BdApi.Webpack.getModule((m) => m.getGuildFolderById);
+            if(!this.cachedModules.folderModule)
+                this.cachedModules.folderModule = BdApi.Webpack.getModule((m) => m.getGuildFolderById);
+            var folderModule = this.cachedModules.folderModule;
             for(var folderId of this.settings.folderWhitelist){
                 if(folderModule.getGuildFolderById(folderId).guildIds.includes(guildId))return true;
             }

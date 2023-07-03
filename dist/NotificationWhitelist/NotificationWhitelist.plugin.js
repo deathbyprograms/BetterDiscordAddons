@@ -1,7 +1,7 @@
 /**
  * @name NotificationWhitelist
  * @description Allows servers and channels to be added to a notification whitelist
- * @version 0.0.1
+ * @version 0.0.2
  * @author DeathByPrograms
  * @authorId 234086939102281728
  * @website https://github.com/deathbyprograms/BetterDiscordAddons/tree/main/dist/NotificationWhitelist
@@ -14,7 +14,7 @@ const config = {
     author: "DeathByPrograms",
     authorId: "234086939102281728",
     authorLink: "",
-    version: "0.0.1",
+    version: "0.0.2",
     description: "Allows servers and channels to be added to a notification whitelist",
     website: "https://github.com/deathbyprograms/BetterDiscordAddons/tree/main/dist/NotificationWhitelist",
     source: "https://github.com/deathbyprograms/BetterDiscordAddons/blob/main/dist/NotificationWhitelist/NotificationWhitelist.plugin.js",
@@ -68,6 +68,8 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             this.defaultSettings.channelWhitelist = [];
             this.defaultSettings.enableWhitelisting = true;
             this.defaultSettings.allowNonMessageNotifications = false;
+            
+            this.cachedModules = {};
         }
 
         onStart() {
@@ -219,7 +221,9 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
          * @returns {boolean} - Whether the guild is in a whitelisted folder
          */
         checkIfGuildInFolderWhitelist(guildId){
-            var folderModule = BdApi.Webpack.getModule((m) => m.getGuildFolderById);
+            if(!this.cachedModules.folderModule)
+                this.cachedModules.folderModule = BdApi.Webpack.getModule((m) => m.getGuildFolderById);
+            var folderModule = this.cachedModules.folderModule;
             for(var folderId of this.settings.folderWhitelist){
                 if(folderModule.getGuildFolderById(folderId).guildIds.includes(guildId))return true;
             }
