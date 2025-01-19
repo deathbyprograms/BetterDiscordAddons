@@ -171,6 +171,9 @@ module.exports = class {
           "Blocked notification: ",
           args[3]
         );
+        return new Promise((resolve, reject) => {
+          resolve();
+        });
       }
     );
   }
