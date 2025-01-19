@@ -9,22 +9,28 @@
  */
 module.exports = class {
   constructor() {
-    // Set the default settings for the plugin
-    this.defaultSettings = {};
-    this.defaultSettings.serverWhitelist = [];
-    this.defaultSettings.folderWhitelist = [];
-    this.defaultSettings.channelWhitelist = [];
-    this.defaultSettings.enableWhitelisting = true;
-    this.defaultSettings.allowNonMessageNotifications = false;
+    // Initialize the settings for the plugin
+    this.settings = {};
+    this.settings.serverWhitelist = [];
+    this.settings.folderWhitelist = [];
+    this.settings.channelWhitelist = [];
+    this.settings.enableWhitelisting = true;
+    this.settings.allowNonMessageNotifications = false;
 
-    this.settings = structuredClone(this.defaultSettings);
-
-    this.cachedModules = {};
+    this.modules = {};
   }
 
   start() {
     BdApi.Logger.info("NotificationWhitelist", "Plugin enabled!");
     this.loadSettings();
+
+    // Get webpack modules
+    this.modules.folderModule = BdApi.Webpack.getByKeys("getGuildFolderById");
+    this.modules.notifModule = BdApi.Webpack.getByKeys(
+      "showNotification",
+      "requestPermission"
+    );
+
     this.contextPatchRemovers = [];
 
     // Add the whitelist option to the server and folder context menu.
@@ -36,7 +42,6 @@ module.exports = class {
 
         if (props.guild) {
           // Check if the context menu is for a server.
-
           res.props.children.push(
             BdApi.ContextMenu.buildItem({
               type: "toggle",
@@ -52,7 +57,6 @@ module.exports = class {
           );
         } else if (props.folderId) {
           // Check if the context menu is for a folder.
-
           res.props.children.push(
             BdApi.ContextMenu.buildItem({
               type: "toggle",
@@ -136,14 +140,10 @@ module.exports = class {
       })
     );
 
-    var notifModule = BdApi.Webpack.getModule(
-      (m) => m.showNotification && m.requestPermission
-    );
-
     // Patch the showNotification function to intercept notifications if they are not whitelisted while whitelisting is enabled.
     BdApi.Patcher.instead(
       "NotificationWhitelist",
-      notifModule,
+      this.modules.notifModule,
       "showNotification",
       (_, args, orig) => {
         if (!this.settings.enableWhitelisting) return orig(...args); // If whitelisting is disabled, allow the notification.
@@ -319,15 +319,10 @@ module.exports = class {
    * @returns {boolean} - Whether the guild is in a whitelisted folder
    */
   checkIfGuildInFolderWhitelist(guildId) {
-    if (!this.cachedModules.folderModule)
-      this.cachedModules.folderModule = BdApi.Webpack.getModule(
-        (m) => m.getGuildFolderById
-      );
-    var folderModule = this.cachedModules.folderModule;
-    for (var folderId of this.settings.folderWhitelist) {
-      if (folderModule.getGuildFolderById(folderId).guildIds.includes(guildId))
-        return true;
-    }
-    return false;
+    return this.settings.folderWhitelist.some((folderId) =>
+      this.modules.folderModule
+        .getGuildFolderById(folderId)
+        .guildIds.includes(guildId)
+    );
   }
 };
