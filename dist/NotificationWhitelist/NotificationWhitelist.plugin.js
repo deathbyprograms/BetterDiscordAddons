@@ -292,28 +292,24 @@ module.exports = class {
           }).bind(this),
         },
         {
-          type: "custom",
+          type: "button",
           id: "clearWhitelist",
           name: "Clear whitelist",
           note: "",
-          children: BdApi.React.createElement(
-            BdApi.Components.Button,
-            {
-              onClick: () =>
-                BdApi.UI.showConfirmationModal(
-                  "Really Clear Whitelists?",
-                  "Are you sure you want to clear your notification whitelists? This is irreversible",
-                  {
-                    danger: true,
-                    confirmText: "Clear",
-                    onConfirm: this.clearWhitelist.bind(this),
-                  }
-                ),
-              color: BdApi.Components.Button.Colors.RED,
-              size: BdApi.Components.Button.Sizes.SMALL,
-            },
-            "Clear"
-          ),
+          children: "Clear",
+          color: BdApi.Components.Button.Colors.RED,
+          size: BdApi.Components.Button.Sizes.SMALL,
+          onClick: () => {
+            BdApi.UI.showConfirmationModal(
+              "Really Clear Whitelists?",
+              "Are you sure you want to clear your notification whitelists? This is irreversible",
+              {
+                danger: true,
+                confirmText: "Clear",
+                onConfirm: this.clearWhitelist.bind(this),
+              }
+            );
+          },
         },
       ],
       onChange: this.saveSettings.bind(this),
