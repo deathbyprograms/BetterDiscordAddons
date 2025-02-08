@@ -192,7 +192,6 @@ module.exports = class {
     // Unpatch all the patches we made.
     BdApi.Patcher.unpatchAll("NotificationWhitelist");
     for (var patchRemover of this.contextPatchRemovers) patchRemover();
-    this.contextPatchRemovers = [];
   }
 
   /**
