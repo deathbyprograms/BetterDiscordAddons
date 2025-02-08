@@ -151,30 +151,33 @@ module.exports = class {
       (_, args, orig) => {
         if (!this.settings.enableWhitelisting) return orig(...args); // If whitelisting is disabled, allow the notification.
         if (!args[3]) return orig(...args); // If the showNotification function is somehow called without the proper information, allow the notification.
+
+        const notif = args[3];
+
         if (
           this.settings.allowNonMessageNotifications &&
-          !args[3].channel_id &&
-          !args[3].guild_id
+          !notif.channel_id &&
+          !notif.guild_id
         )
           return orig(...args); // If the notification is not for a channel or server (e.g. friend requests) and such notifications are allowed, allow the notification.
-        if (this.settings.channelWhitelist.includes(args[3].channel_id))
+        if (this.settings.channelWhitelist.includes(notif.channel_id))
           return orig(...args); // If the channel is whitelisted, allow the notification.
         if (
-          args[3].guild_id &&
-          this.settings.serverWhitelist.includes(args[3].guild_id)
+          notif.guild_id &&
+          this.settings.serverWhitelist.includes(notif.guild_id)
         )
           return orig(...args); // If the notification is from a whitelisted server, allow the notificaiton.
         if (
-          args[3].guild_id &&
-          this.checkIfGuildInFolderWhitelist(args[3].guild_id)
+          notif.guild_id &&
+          this.checkIfGuildInFolderWhitelist(notif.guild_id)
         )
           return orig(...args); // If the notification is from a whitelisted folder, allow the notification.
         BdApi.Logger.debug(
           "NotificationWhitelist",
           "Blocked notification: ",
-          args[3]
+          notif
         );
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
           resolve();
         });
       }
