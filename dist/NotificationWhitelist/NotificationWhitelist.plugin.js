@@ -8,9 +8,11 @@
  * @source https//github.com/deathbyprograms/BetterDiscordAddons/blob/main/dist/NotificationWhitelist/NotificationWhitelist.plugin.js
  */
 const DEFAULT_SETTINGS = {
-  serverWhitelist: [],
   folderWhitelist: [],
+  serverWhitelist: [],
+  serverBlacklist: [],
   channelWhitelist: [],
+  channelBlacklist: [],
   enableWhitelisting: true,
   allowNonMessageNotifications: false,
 };
@@ -223,6 +225,17 @@ module.exports = class {
   }
 
   /**
+   * Toggles the blacklisted status of the given id
+   *
+   * @param {string} id - The id of the channel/server/folder to toggle
+   * @param {Array<string>} arr - The blacklist array to toggle the id in
+   */
+  toggleBlacklisted(id, arr) {
+    if (arr.includes(id)) this.removeFromBlacklist(id, arr);
+    else this.addToBlacklist(id, arr);
+  }
+
+  /**
    * Whitelists the given id
    *
    * @param {string} id - The id of the channel/server/folder to whitelist
@@ -230,6 +243,20 @@ module.exports = class {
    */
   addToWhitelist(id, arr) {
     BdApi.Logger.debug("NotificationWhitelist", "Adding to whitelist: ", id);
+    if (!arr.includes(id)) {
+      arr.push(id);
+      this.saveSettings();
+    }
+  }
+
+  /**
+   * Blacklists the given id
+   *
+   * @param {string} id - The id of the channel/server/folder to blacklist
+   * @param {Array<string>} arr - The blacklist array to add the id to
+   */
+  addToBlacklist(id, arr) {
+    BdApi.Logger.debug("NotificationWhitelist", "Adding to blacklist: ", id);
     if (!arr.includes(id)) {
       arr.push(id);
       this.saveSettings();
@@ -255,6 +282,24 @@ module.exports = class {
   }
 
   /**
+   * Removes the given id from the blacklist
+   *
+   * @param {string} id - The id of the channel/server/folder to remove from the blacklist
+   * @param {Array<string>} arr - The blacklist array to remove the id from
+   */
+  removeFromBlacklist(id, arr) {
+    BdApi.Logger.debug(
+      "NotificationWhitelist",
+      "Removing from blacklist: ",
+      id
+    );
+    if (arr.includes(id)) {
+      arr.splice(arr.indexOf(id), 1);
+      this.saveSettings();
+    }
+  }
+
+  /**
    * Clears all whitelists
    */
   clearWhitelist() {
@@ -262,6 +307,16 @@ module.exports = class {
     this.settings.serverWhitelist = [];
     this.settings.folderWhitelist = [];
     this.settings.channelWhitelist = [];
+    this.saveSettings();
+  }
+
+  /**
+   * Clears all blacklists
+   */
+  clearBlacklist() {
+    BdApi.Logger.info("NotificationWhitelist", "Clearing blacklist!");
+    this.settings.serverBlacklist = [];
+    this.settings.channelBlacklist = [];
     this.saveSettings();
   }
 
