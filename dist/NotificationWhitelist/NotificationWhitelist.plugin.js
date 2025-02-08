@@ -321,12 +321,6 @@ module.exports = class {
   }
 
   getSettingsPanel() {
-    var button = document.createElement("button");
-    button.classList = "bd-button bd-settings-button bd-setting-item";
-    button.onclick = this.clearWhitelist.bind(this);
-    var text = document.createTextNode("Clear Whitelist");
-    button.appendChild(text);
-
     return BdApi.UI.buildSettingsPanel({
       settings: [
         {
