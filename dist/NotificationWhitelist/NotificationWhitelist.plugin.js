@@ -45,8 +45,8 @@ module.exports = class {
           BdApi.ContextMenu.buildItem({ type: "separator" })
         );
 
+        // Check if the context menu is for a server.
         if (props.guild) {
-          // Check if the context menu is for a server.
           res.props.children.push(
             BdApi.ContextMenu.buildItem({
               type: "toggle",
@@ -60,8 +60,8 @@ module.exports = class {
               },
             })
           );
-        } else if (props.folderId) {
           // Check if the context menu is for a folder.
+        } else if (props.folderId) {
           res.props.children.push(
             BdApi.ContextMenu.buildItem({
               type: "toggle",
