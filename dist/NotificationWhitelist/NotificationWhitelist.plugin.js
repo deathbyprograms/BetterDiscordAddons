@@ -202,7 +202,10 @@ module.exports = class {
     BdApi.Logger.debug("NotificationWhitelist", "Loading settings");
     if (!BdApi.Data.load("NotificationWhitelist", "settings"))
       BdApi.Data.save("NotificationWhitelist", "settings", DEFAULT_SETTINGS);
-    this.settings = BdApi.Data.load("NotificationWhitelist", "settings");
+    this.settings = {
+      ...structuredClone(DEFAULT_SETTINGS),
+      ...BdApi.Data.load("NotificationWhitelist", "settings"),
+    };
   }
 
   /**
