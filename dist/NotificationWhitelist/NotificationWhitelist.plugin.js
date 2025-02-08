@@ -7,15 +7,18 @@
  * @website https//github.com/deathbyprograms/BetterDiscordAddons/tree/main/dist/NotificationWhitelist
  * @source https//github.com/deathbyprograms/BetterDiscordAddons/blob/main/dist/NotificationWhitelist/NotificationWhitelist.plugin.js
  */
+const DEFAULT_SETTINGS = {
+  serverWhitelist: [],
+  folderWhitelist: [],
+  channelWhitelist: [],
+  enableWhitelisting: true,
+  allowNonMessageNotifications: false,
+};
+
 module.exports = class {
   constructor() {
     // Initialize the settings for the plugin
-    this.settings = {};
-    this.settings.serverWhitelist = [];
-    this.settings.folderWhitelist = [];
-    this.settings.channelWhitelist = [];
-    this.settings.enableWhitelisting = true;
-    this.settings.allowNonMessageNotifications = false;
+    this.settings = structuredClone(DEFAULT_SETTINGS);
 
     this.modules = {};
   }
