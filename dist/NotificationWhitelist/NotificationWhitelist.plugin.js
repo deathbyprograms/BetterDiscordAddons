@@ -7,6 +7,10 @@
  * @website https//github.com/deathbyprograms/BetterDiscordAddons/tree/main/dist/NotificationWhitelist
  * @source https//github.com/deathbyprograms/BetterDiscordAddons/blob/main/dist/NotificationWhitelist/NotificationWhitelist.plugin.js
  */
+
+const VERSION = "1.1.0";
+const CHANGELOG = {};
+
 const DEFAULT_SETTINGS = {
   folderWhitelist: [],
   serverWhitelist: [],
@@ -28,6 +32,8 @@ module.exports = class {
 
   start() {
     BdApi.Logger.info("NotificationWhitelist", "Plugin enabled!");
+    this.handleChangelog();
+
     this.loadSettings();
 
     // Get webpack modules
@@ -474,5 +480,27 @@ module.exports = class {
   isDMOrGroupDM(channelId) {
     const channel = this.modules.channelStore.getChannel(channelId);
     return channel.isDM() || channel.isGroupDM();
+  }
+
+  /**
+   * Check version and show changelog if updated
+   */
+  handleChangelog() {
+    const lastUsedVersion = BdApi.Data.load(
+      "NotificationWhitelist",
+      "currentVersion"
+    );
+
+    if (
+      !lastUsedVersion ||
+      BdApi.Utils.semverCompare(lastUsedVersion, VERSION) === 1
+    ) {
+      BdApi.UI.showChangelogModal({
+        title: `Notification Whitelist ${VERSION}`,
+        changes: CHANGELOG[VERSION],
+      });
+    }
+
+    BdApi.Data.save("NotificationWhitelist", "currentVersion", VERSION);
   }
 };
