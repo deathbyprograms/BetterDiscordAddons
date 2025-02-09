@@ -304,7 +304,7 @@ module.exports = class {
   /**
    * Clears all whitelists
    */
-  clearWhitelist() {
+  clearWhitelists() {
     BdApi.Logger.info("NotificationWhitelist", "Clearing whitelist!");
     this.settings.serverWhitelist = [];
     this.settings.folderWhitelist = [];
@@ -315,7 +315,7 @@ module.exports = class {
   /**
    * Clears all blacklists
    */
-  clearBlacklist() {
+  clearBlacklists() {
     BdApi.Logger.info("NotificationWhitelist", "Clearing blacklist!");
     this.settings.serverBlacklist = [];
     this.settings.channelBlacklist = [];
@@ -360,7 +360,7 @@ module.exports = class {
               {
                 danger: true,
                 confirmText: "Clear",
-                onConfirm: this.clearWhitelist.bind(this),
+                onConfirm: this.clearWhitelists.bind(this),
               }
             );
           },
