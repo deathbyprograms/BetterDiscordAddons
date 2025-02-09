@@ -397,6 +397,26 @@ module.exports = class {
             );
           },
         },
+        {
+          type: "button",
+          id: "clearBlacklist",
+          name: "Clear blacklist",
+          note: "",
+          children: "Clear",
+          color: BdApi.Components.Button.Colors.RED,
+          size: BdApi.Components.Button.Sizes.SMALL,
+          onClick: () => {
+            BdApi.UI.showConfirmationModal(
+              "Really Clear Blacklists?",
+              "Are you sure you want to clear your notification blacklists? This is irreversible",
+              {
+                danger: true,
+                confirmText: "Clear",
+                onConfirm: this.clearBlacklists.bind(this),
+              }
+            );
+          },
+        },
       ],
       onChange: this.saveSettings.bind(this),
     });
