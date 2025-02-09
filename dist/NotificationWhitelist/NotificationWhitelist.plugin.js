@@ -203,7 +203,7 @@ module.exports = class {
             this.settings.serverWhitelist.includes(notif.guild_id)
           )
             return orig(...args); // If the server is whitelisted, allow the notification.
-          if (notif.guild_id && this.checkIfGuildInFolderWhitelist(notif.guild_id))
+          if (notif.guild_id && this.guildInFolderWhitelist(notif.guild_id))
             return orig(...args); // If the folder is whitelisted, allow the notification.
         }
         BdApi.Logger.debug(
@@ -408,7 +408,7 @@ module.exports = class {
    * @param {string} guildId - The guild id to check
    * @returns {boolean} - Whether the guild is in a whitelisted folder
    */
-  checkIfGuildInFolderWhitelist(guildId) {
+  guildInFolderWhitelist(guildId) {
     return this.settings.folderWhitelist.some((folderId) =>
       this.modules.folderModule
         .getGuildFolderById(folderId)
