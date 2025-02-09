@@ -193,18 +193,19 @@ module.exports = class {
           !notif.guild_id
         )
           return orig(...args); // If the notification is not for a channel or server (e.g. friend requests) and such notifications are allowed, allow the notification.
-        if (this.settings.channelWhitelist.includes(notif.channel_id))
-          return orig(...args); // If the channel is whitelisted, allow the notification.
-        if (
-          notif.guild_id &&
-          this.settings.serverWhitelist.includes(notif.guild_id)
-        )
-          return orig(...args); // If the notification is from a whitelisted server, allow the notificaiton.
-        if (
-          notif.guild_id &&
-          this.checkIfGuildInFolderWhitelist(notif.guild_id)
-        )
-          return orig(...args); // If the notification is from a whitelisted folder, allow the notification.
+
+        // If channel is blacklisted, skip all whitelist checks
+        if (!this.isBlacklisted(notif.channel_id, notif.guild_id)) {
+          if (this.settings.channelWhitelist.includes(notif.channel_id))
+            return orig(...args); // If the channel is whitelisted, allow the notification.
+          if (
+            notif.guild_id &&
+            this.settings.serverWhitelist.includes(notif.guild_id)
+          )
+            return orig(...args); // If the server is whitelisted, allow the notification.
+          if (notif.guild_id && this.checkIfGuildInFolderWhitelist(notif.guild_id))
+            return orig(...args); // If the folder is whitelisted, allow the notification.
+        }
         BdApi.Logger.debug(
           "NotificationWhitelist",
           "Blocked notification: ",
@@ -412,6 +413,20 @@ module.exports = class {
       this.modules.folderModule
         .getGuildFolderById(folderId)
         .guildIds.includes(guildId)
+    );
+  }
+
+  /**
+   * Checks whether the given channel is blacklisted
+   *
+   * @param {string} channelId The guild id to check
+   * @param {string|undefined} guildId The guild id to check
+   * @returns {boolean} Whether the channel is blacklisted or not
+   */
+  isBlacklisted(channelId, guildId) {
+    return (
+      this.settings.channelBlacklist.includes(channelId) ||
+      (guildId && this.settings.serverBlacklist.includes(guildId))
     );
   }
 };
