@@ -2,14 +2,32 @@
  * @name NotificationWhitelist
  * @author DeathByPrograms
  * @description Allows servers and channels to be added to a notification whitelist
- * @version 1.1.0
+ * @version 1.2.0
  * @authorId 234086939102281728
  * @website https//github.com/deathbyprograms/BetterDiscordAddons/tree/main/dist/NotificationWhitelist
  * @source https//github.com/deathbyprograms/BetterDiscordAddons/blob/main/dist/NotificationWhitelist/NotificationWhitelist.plugin.js
  */
 
-const VERSION = "1.1.0";
-const CHANGELOG = {};
+const VERSION = "1.2.0";
+const CHANGELOG = {
+  "1.2.0": [
+    {
+      title: "New Features",
+      type: "added",
+      items: [
+        "Added the ability to blacklist channels and servers. You can now find that toggle in those context menus. Note that blacklists take priority over whitelists.",
+        "Added a setting to disable filtering of DMs and group DMs. Turning this off will allow all notifications for DMs and group DMs.",
+      ],
+    },
+    {
+      title: "Bug fixes",
+      type: "fixed",
+      items: [
+        "Fixed the settings panel and context menu toggles breaking when using the plugin for the first time.",
+      ],
+    },
+  ],
+};
 
 const DEFAULT_SETTINGS = {
   folderWhitelist: [],
