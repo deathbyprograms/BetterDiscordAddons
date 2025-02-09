@@ -14,6 +14,7 @@ const DEFAULT_SETTINGS = {
   channelWhitelist: [],
   channelBlacklist: [],
   enableWhitelisting: true,
+  filterDMs: true,
   allowNonMessageNotifications: false,
 };
 
@@ -35,6 +36,7 @@ module.exports = class {
       "showNotification",
       "requestPermission"
     );
+    this.modules.channelStore = BdApi.Webpack.getStore("ChannelStore");
 
     this.contextPatchRemovers = [];
 
@@ -193,6 +195,9 @@ module.exports = class {
           !notif.guild_id
         )
           return orig(...args); // If the notification is not for a channel or server (e.g. friend requests) and such notifications are allowed, allow the notification.
+
+        if (!this.settings.filterDMs && this.isDMOrGroupDM(notif.channel_id))
+          return orig(...args); // If the notification is a DM or group DM and DMs aren't filtered, allow the notification.
 
         // If channel is blacklisted, skip all whitelist checks
         if (!this.isBlacklisted(notif.channel_id, notif.guild_id)) {
@@ -448,5 +453,16 @@ module.exports = class {
       this.settings.channelBlacklist.includes(channelId) ||
       (guildId && this.settings.serverBlacklist.includes(guildId))
     );
+  }
+
+  /**
+   * Checks whether the given channel is a DM or group DM
+   *
+   * @param {string} channelId The channel id to check
+   * @returns {boolean} Whether the channel is a DM or group DM or not
+   */
+  isDMOrGroupDM(channelId) {
+    const channel = this.modules.channelStore.getChannel(channelId);
+    return channel.isDM() || channel.isGroupDM();
   }
 };
