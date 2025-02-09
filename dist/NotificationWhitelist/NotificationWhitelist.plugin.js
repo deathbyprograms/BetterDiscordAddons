@@ -47,6 +47,7 @@ module.exports = class {
 
         // Check if the context menu is for a server.
         if (props.guild) {
+          // Add server whitelist toggle
           res.props.children.push(
             BdApi.ContextMenu.buildItem({
               type: "toggle",
@@ -60,8 +61,23 @@ module.exports = class {
               },
             })
           );
+          // Add server blacklist toggle
+          res.props.children.push(
+            BdApi.ContextMenu.buildItem({
+              type: "toggle",
+              label: "Notifications Blacklisted",
+              checked: this.settings.serverBlacklist.includes(props.guild.id),
+              action: (_) => {
+                this.toggleBlacklisted(
+                  props.guild.id,
+                  this.settings.serverBlacklist
+                );
+              },
+            })
+          );
           // Check if the context menu is for a folder.
         } else if (props.folderId) {
+          // Add folder whitelist toggle
           res.props.children.push(
             BdApi.ContextMenu.buildItem({
               type: "toggle",
@@ -85,6 +101,7 @@ module.exports = class {
         res.props.children.push(
           BdApi.ContextMenu.buildItem({ type: "separator" })
         );
+        // Add channel whitelist toggle
         res.props.children.push(
           BdApi.ContextMenu.buildItem({
             type: "toggle",
@@ -94,6 +111,20 @@ module.exports = class {
               this.toggleWhitelisted(
                 props.channel.id,
                 this.settings.channelWhitelist
+              );
+            },
+          })
+        );
+        // Add channel blacklist toggle
+        res.props.children.push(
+          BdApi.ContextMenu.buildItem({
+            type: "toggle",
+            label: "Notifications Blacklisted",
+            checked: this.settings.channelBlacklist.includes(props.channel.id),
+            action: (_) => {
+              this.toggleBlacklisted(
+                props.channel.id,
+                this.settings.channelBlacklist
               );
             },
           })
