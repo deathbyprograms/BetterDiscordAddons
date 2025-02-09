@@ -250,8 +250,8 @@ module.exports = class {
   /**
    * Toggles the whitelisted status of the given id
    *
-   * @param {string} id - The id of the channel/server/folder to toggle
-   * @param {Array<string>} arr - The whitelist array to toggle the id in
+   * @param {string} id The id of the channel/server/folder to toggle
+   * @param {Array<string>} arr The whitelist array to toggle the id in
    */
   toggleWhitelisted(id, arr) {
     if (arr.includes(id)) this.removeFromWhitelist(id, arr);
@@ -261,8 +261,8 @@ module.exports = class {
   /**
    * Toggles the blacklisted status of the given id
    *
-   * @param {string} id - The id of the channel/server/folder to toggle
-   * @param {Array<string>} arr - The blacklist array to toggle the id in
+   * @param {string} id The id of the channel/server/folder to toggle
+   * @param {Array<string>} arr The blacklist array to toggle the id in
    */
   toggleBlacklisted(id, arr) {
     if (arr.includes(id)) this.removeFromBlacklist(id, arr);
@@ -272,8 +272,8 @@ module.exports = class {
   /**
    * Whitelists the given id
    *
-   * @param {string} id - The id of the channel/server/folder to whitelist
-   * @param {Array<string>} arr - The whitelist array to add the id to
+   * @param {string} id The id of the channel/server/folder to whitelist
+   * @param {Array<string>} arr The whitelist array to add the id to
    */
   addToWhitelist(id, arr) {
     BdApi.Logger.debug("NotificationWhitelist", "Adding to whitelist: ", id);
@@ -286,8 +286,8 @@ module.exports = class {
   /**
    * Blacklists the given id
    *
-   * @param {string} id - The id of the channel/server/folder to blacklist
-   * @param {Array<string>} arr - The blacklist array to add the id to
+   * @param {string} id The id of the channel/server/folder to blacklist
+   * @param {Array<string>} arr The blacklist array to add the id to
    */
   addToBlacklist(id, arr) {
     BdApi.Logger.debug("NotificationWhitelist", "Adding to blacklist: ", id);
@@ -300,8 +300,8 @@ module.exports = class {
   /**
    * Removes the given id from the whitelist
    *
-   * @param {string} id - The id of the channel/server/folder to remove from the whitelist
-   * @param {Array<string>} arr - The whitelist array to remove the id from
+   * @param {string} id The id of the channel/server/folder to remove from the whitelist
+   * @param {Array<string>} arr The whitelist array to remove the id from
    */
   removeFromWhitelist(id, arr) {
     BdApi.Logger.debug(
@@ -318,8 +318,8 @@ module.exports = class {
   /**
    * Removes the given id from the blacklist
    *
-   * @param {string} id - The id of the channel/server/folder to remove from the blacklist
-   * @param {Array<string>} arr - The blacklist array to remove the id from
+   * @param {string} id The id of the channel/server/folder to remove from the blacklist
+   * @param {Array<string>} arr The blacklist array to remove the id from
    */
   removeFromBlacklist(id, arr) {
     BdApi.Logger.debug(
@@ -405,8 +405,8 @@ module.exports = class {
   /**
    * Checks whether the given guild is in a whitelisted folder
    *
-   * @param {string} guildId - The guild id to check
-   * @returns {boolean} - Whether the guild is in a whitelisted folder
+   * @param {string} guildId The guild id to check
+   * @returns {boolean} Whether the guild is in a whitelisted folder
    */
   guildInFolderWhitelist(guildId) {
     return this.settings.folderWhitelist.some((folderId) =>
