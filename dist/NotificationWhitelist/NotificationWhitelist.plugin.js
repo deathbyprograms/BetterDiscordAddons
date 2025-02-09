@@ -439,7 +439,7 @@ module.exports = class {
   /**
    * Checks whether the given channel is blacklisted
    *
-   * @param {string} channelId The guild id to check
+   * @param {string} channelId The channel id to check
    * @param {string|undefined} guildId The guild id to check
    * @returns {boolean} Whether the channel is blacklisted or not
    */
