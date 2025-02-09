@@ -374,6 +374,16 @@ module.exports = class {
         },
         {
           type: "switch",
+          id: "filterDMs",
+          name: "Filter DMs",
+          note: "Applies the whitelist and blacklist to DMs. Disabling this will lead to all notifications for DMs and group DMs being allowed.",
+          value: this.settings.filterDMs,
+          onChange: ((value) => {
+            this.settings.filterDMs = value;
+          }).bind(this),
+        },
+        {
+          type: "switch",
           id: "allowNonMessageNotifications",
           name: "Allow non-message notifications",
           note: "Allows notifications that are not for messages to be shown (e.g. friend requests).",
